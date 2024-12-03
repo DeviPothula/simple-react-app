@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: react-app
-        image: devika760/simple-react-app-for-kubernets:latest
+        image: 148761656970.dkr.ecr.ap-south-1.amazonaws.com/react-app-namespace/react-app:latest
         ports:
         - containerPort: 3000
