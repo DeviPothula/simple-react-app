@@ -76,6 +76,7 @@ pipeline {
                          kubectl apply -f ingres-def.yaml
                          kubectl apply -f react-app-deploy.yaml
                          kubectl apply -f react-app-service.yaml
+                         kubectl rollout restart deployment/react-app
                         '''
                     }
 
