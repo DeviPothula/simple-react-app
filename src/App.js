@@ -7,6 +7,7 @@ function App() {
       <h2>Using Kubernetes as container orchestration </h2>
       <h3>Amazon EKS :</h3>
       <p>Deployed successfully </p>
+      <p>New change to test deployment 2 !!!</p>
     </div>
   );
 }
