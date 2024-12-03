@@ -72,6 +72,7 @@ pipeline {
                     withAWS(credentials: 'AWS-CRED') {
                         sh '''
                         aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME
+                         kubectl set image deployment/react-app react-app=148761656970.dkr.ecr.ap-south-1.amazonaws.com/react-app-namespace/react-app:latest --record
                          kubectl apply -f ingres-def.yaml
                          kubectl apply -f react-app-deploy.yaml
                          kubectl apply -f react-app-service.yaml

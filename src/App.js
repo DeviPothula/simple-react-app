@@ -8,6 +8,7 @@ function App() {
       <h3>Amazon EKS :</h3>
       <p>Deployed successfully </p>
       <p>New change to test deployment 2 !!!</p>
+      <p style={{color:'red'}}>New change to test deployment 3 !!! please work</p>
     </div>
   );
 }
