@@ -20,7 +20,7 @@ pipeline {
             steps {
                 script {
                     // Login to AWS ECR using withAWS
-                    withAWS(credentials: 'AWS-CRED') {
+                    withAWS(credentials: 'IAM-USER-CRED') {
                         sh '''
                         aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URL
                         '''
@@ -56,7 +56,7 @@ pipeline {
             steps {
                 script {
                     // Push both the latest and build number tags to AWS ECR
-                    withAWS(credentials: 'AWS-CRED') {
+                    withAWS(credentials: 'IAM-USER-CRED') {
                         sh '''
                         docker push $ECR_REPO:latest
                         docker push $ECR_REPO:$BUILD_NUMBER
@@ -70,7 +70,7 @@ pipeline {
             steps {
                 script {
                     // Update kubeconfig to access the EKS cluster
-                    withAWS(credentials: 'AWS-CRED') {
+                    withAWS(credentials: 'IAM-USER-CRED') {
                         sh '''
                         aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME
                         kubectl apply -f ingres-def.yaml

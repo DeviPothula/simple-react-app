@@ -12,6 +12,7 @@ function App() {
       <p style={{ color: 'green' }}>Rollout command added to restart the server after every build....</p>
       <p>Test github hook commit..</p>
       <p>build 16 final test cluster created ...</p>
+      <p>I am build 17 checking app is updating correctly or not</p>
     </div>
   );
 }
