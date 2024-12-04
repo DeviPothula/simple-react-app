@@ -1,14 +1,13 @@
 pipeline {
     agent any
-    
+
     environment {
         AWS_REGION = 'ap-south-1'
-        ECR_URL= "148761656970.dkr.ecr.ap-south-1.amazonaws.com"
+        ECR_URL = '148761656970.dkr.ecr.ap-south-1.amazonaws.com'
         ECR_REPO = '148761656970.dkr.ecr.ap-south-1.amazonaws.com/react-app-namespace/react-app'
         CLUSTER_NAME = 'React-App'
-        BUILD_NUMBER = "${env.BUILD_NUMBER}"
+        BUILD_NUMBER = "${env.BUILD_NUMBER}" // Jenkins build number
     }
-    
     stages {
         stage('Clone Repository') {
             steps {
@@ -35,7 +34,7 @@ pipeline {
                 script {
                     // Build the Docker image
                     sh '''
-                    docker build -t react-app-namespace/react-app  .
+                    docker build -t react-app-namespace/react-app .
                     '''
                 }
             }
@@ -44,9 +43,10 @@ pipeline {
         stage('Tag Docker Image') {
             steps {
                 script {
-                    // Tag the Docker image with the ECR repository URL
+                    // Tag the Docker image with the ECR repository URL and build number
                     sh '''
                     docker tag react-app-namespace/react-app:latest $ECR_REPO:latest
+                    docker tag react-app-namespace/react-app:latest $ECR_REPO:$BUILD_NUMBER
                     '''
                 }
             }
@@ -55,10 +55,11 @@ pipeline {
         stage('Push Docker Image to ECR') {
             steps {
                 script {
-                    // Push the Docker image to AWS ECR
+                    // Push both the latest and build number tags to AWS ECR
                     withAWS(credentials: 'AWS-CRED') {
                         sh '''
                         docker push $ECR_REPO:latest
+                        docker push $ECR_REPO:$BUILD_NUMBER
                         '''
                     }
                 }
@@ -72,14 +73,12 @@ pipeline {
                     withAWS(credentials: 'AWS-CRED') {
                         sh '''
                         aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME
-                         kubectl set image deployment/react-app react-app=148761656970.dkr.ecr.ap-south-1.amazonaws.com/react-app-namespace/react-app:latest --record
-                         kubectl apply -f ingres-def.yaml
-                         kubectl apply -f react-app-deploy.yaml
-                         kubectl apply -f react-app-service.yaml
-                         kubectl rollout restart deployment/react-app
+                        kubectl apply -f ingres-def.yaml
+                        kubectl apply -f react-app-deploy.yaml
+                        kubectl apply -f react-app-service.yaml
+                        kubectl rollout restart deployment/react-app
                         '''
                     }
-
                 }
             }
         }
@@ -88,16 +87,28 @@ pipeline {
         always {
             // Clean the workspace after the build
             cleanWs()
+            emailext(
+                subject: "Jenkins Build: ${currentBuild.fullDisplayName}",
+                body: """<p>Build Details:</p>
+                         <ul>
+                           <li>Status: ${currentBuild.currentResult}</li>
+                           <li>Project: ${env.JOB_NAME}</li>
+                           <li>Build Number: ${BUILD_NUMBER}</li>
+                           <li>Build URL: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></li>
+                         </ul>""",
+                to: "devikapothula597@gmail.com",
+                mimeType: 'text/html'
+            )
         }
-        
+
         success {
             // Echo a success message after successful build
-            echo "Build and Deployment completed successfully with image tag: $ECR_REPO:$BUILD_NUMBER"
+            echo "Build and Deployment completed successfully with image tags: $ECR_REPO:latest and $ECR_REPO:$BUILD_NUMBER"
         }
 
         failure {
             // Handle failure case if needed (optional)
-            echo "Build failed. Please check the logs for errors."
+            echo 'Build failed. Please check the logs for errors.'
         }
     }
 }
